@@ -24,6 +24,13 @@ export function HabitCard({ habit }: Props) {
   const [calOpen, setCalOpen] = useState(false);
 
   const fixed = typeof habit.duration === "number";
+  const ranged = !!(habit.startDate && habit.endDate);
+
+  const subtitle = ranged
+    ? `${formatShort(habit.startDate!)} → ${formatShort(habit.endDate!)}`
+    : fixed
+      ? `${habit.duration}-day quest`
+      : "Lifetime ritual";
 
   return (
     <>
@@ -43,7 +50,7 @@ export function HabitCard({ habit }: Props) {
               {habit.title}
             </h3>
             <p className="mt-0.5 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-              {fixed ? `${habit.duration}-day quest` : "Lifetime ritual"}
+              {subtitle}
             </p>
           </div>
 
