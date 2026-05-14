@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { motion } from "motion/react";
-import { Flame, X } from "lucide-react";
+import { Flame, Pencil, Trash2, CalendarPlus } from "lucide-react";
 import { LiquidCheckbox } from "./LiquidCheckbox";
 import { HeatmapStrip } from "./HeatmapStrip";
-import { ProgressRing } from "./ProgressRing";
+import { ProgressBar } from "./ProgressBar";
+import { EditHabitDialog } from "./EditHabitDialog";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getCompletionRate, useHabits, type HabitEntity } from "@/store/habits";
-import { todayStr } from "@/lib/date";
+import { todayStr, dateStr } from "@/lib/date";
 
 interface Props {
   habit: HabitEntity;
@@ -16,68 +20,149 @@ export function HabitCard({ habit }: Props) {
   const today = todayStr();
   const doneToday = !!habit.history[today];
   const rate = getCompletionRate(habit);
+  const [editing, setEditing] = useState(false);
+  const [calOpen, setCalOpen] = useState(false);
+
+  const fixed = typeof habit.duration === "number";
 
   return (
-    <motion.article
-      layout
-      initial={{ opacity: 0, y: 24, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -16, scale: 0.96 }}
-      transition={{ type: "spring", stiffness: 220, damping: 24 }}
-      whileHover={{ y: -4, scale: 1.01 }}
-      className="glass-bento group relative p-5"
-    >
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-[15px] font-semibold tracking-tight text-text-primary">
-            {habit.title}
-          </h3>
-          <p className="mt-0.5 text-[11px] uppercase tracking-wider text-text-muted">
-            {typeof habit.duration === "number"
-              ? `${habit.duration}-day quest`
-              : "Lifetime ritual"}
-          </p>
+    <>
+      <motion.article
+        layout
+        initial={{ opacity: 0, y: 16, scale: 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -12, scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 220, damping: 24 }}
+        whileHover={{ y: -2 }}
+        className="surface-card group relative flex flex-col gap-4 p-4 sm:p-5"
+      >
+        {/* Header */}
+        <header className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-[15px] font-semibold tracking-tight text-foreground">
+              {habit.title}
+            </h3>
+            <p className="mt-0.5 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+              {fixed ? `${habit.duration}-day quest` : "Lifetime ritual"}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <div
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-foreground"
+              title={`${habit.streak}-day streak`}
+            >
+              <Flame
+                className="size-3"
+                style={{
+                  color: habit.streak > 0 ? "var(--accent)" : "var(--muted-foreground)",
+                }}
+              />
+              <span className="tabular-nums">{habit.streak}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Toggle row */}
+        <div className="flex items-center gap-3">
+          <LiquidCheckbox
+            checked={doneToday}
+            onToggle={() => toggleDay(habit.id)}
+            ariaLabel={`Mark ${habit.title} for today`}
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-medium text-foreground">
+              {doneToday ? "Done today" : "Tap to commit today"}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {new Date().toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+
+          <Popover open={calOpen} onOpenChange={setCalOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label="Mark a custom date"
+                className="inline-flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <CalendarPlus className="size-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={undefined}
+                onSelect={(d) => {
+                  if (d) {
+                    toggleDay(habit.id, dateStr(d));
+                    setCalOpen(false);
+                  }
+                }}
+                disabled={(d) => d > new Date()}
+                modifiers={{
+                  done: (d) => !!habit.history[dateStr(d)],
+                }}
+                modifiersStyles={{
+                  done: {
+                    background: "linear-gradient(135deg,var(--accent-from),var(--accent-to))",
+                    color: "var(--accent-foreground)",
+                    fontWeight: 600,
+                  },
+                }}
+                className="pointer-events-auto p-3"
+              />
+              <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+                Pick any past day to toggle.
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div
-            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] px-2 py-1 text-[11px] font-medium text-text-primary"
-            title={`${habit.streak}-day streak`}
+        {/* Progress */}
+        {fixed ? (
+          <ProgressBar progress={rate} label="Quest progress" />
+        ) : (
+          <ProgressBar
+            progress={Object.values(habit.history).filter(Boolean).length / 30}
+            label="Last 30 days"
+          />
+        )}
+
+        {/* Heatmap */}
+        <div>
+          <p className="mb-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            Last 28 days
+          </p>
+          <HeatmapStrip habit={habit} days={28} />
+        </div>
+
+        {/* Footer actions */}
+        <footer className="-mb-1 flex items-center justify-end gap-1 pt-1">
+          <button
+            onClick={() => setEditing(true)}
+            aria-label="Edit habit"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            <Flame
-              className="size-3"
-              style={{ color: habit.streak > 0 ? "#4facfe" : "rgba(255,255,255,0.5)" }}
-            />
-            <span className="tabular-nums">{habit.streak}</span>
-          </div>
+            <Pencil className="size-3.5" />
+            Edit
+          </button>
           <button
             onClick={() => removeHabit(habit.id)}
             aria-label="Remove habit"
-            className="rounded-full p-1 text-text-muted opacity-0 transition-opacity hover:text-text-primary group-hover:opacity-100"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
           >
-            <X className="size-3.5" />
+            <Trash2 className="size-3.5" />
+            Delete
           </button>
-        </div>
-      </div>
+        </footer>
+      </motion.article>
 
-      {/* Body */}
-      <div className="mt-5 flex items-center gap-4">
-        <LiquidCheckbox
-          checked={doneToday}
-          onToggle={() => toggleDay(habit.id)}
-          ariaLabel={`Mark ${habit.title} for today`}
-        />
-        <div className="flex flex-1 flex-col gap-1.5">
-          <span className="text-[11px] uppercase tracking-wider text-text-muted">
-            {doneToday ? "Done today" : "Tap to commit today"}
-          </span>
-          <HeatmapStrip habit={habit} days={28} />
-        </div>
-        {typeof habit.duration === "number" && (
-          <ProgressRing progress={rate} size={52} />
-        )}
-      </div>
-    </motion.article>
+      <EditHabitDialog habit={editing ? habit : null} open={editing} onOpenChange={setEditing} />
+    </>
   );
 }

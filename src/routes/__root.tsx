@@ -94,11 +94,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+const themeBootstrap = `(() => { try { const s = localStorage.getItem('zenith-theme'); const m = window.matchMedia('(prefers-color-scheme: dark)').matches; if (s === 'dark' || (!s && m)) document.documentElement.classList.add('dark'); } catch(e){} })();`;
+
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
       <body>
         {children}

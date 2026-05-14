@@ -19,18 +19,25 @@ export function lastNDays(n: number, end: Date = new Date()): string[] {
   return out;
 }
 
+/**
+ * Streak counts consecutive completed days ending at today (or, if today is
+ * not yet done, ending at yesterday — so the streak doesn't drop until the
+ * day actually ends).
+ */
 export function computeStreak(history: Record<string, boolean>): number {
-  let streak = 0;
   const now = new Date();
+  let cursor = new Date(now);
+
+  // If today not done, start from yesterday so an active streak persists.
+  if (!history[todayStr(cursor)]) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  let streak = 0;
   for (let i = 0; i < 3650; i++) {
-    const d = new Date(now);
-    d.setDate(now.getDate() - i);
-    const key = todayStr(d);
-    if (history[key]) {
+    if (history[todayStr(cursor)]) {
       streak++;
-    } else if (i === 0) {
-      // today not done — streak counts from yesterday backward
-      continue;
+      cursor.setDate(cursor.getDate() - 1);
     } else {
       break;
     }
