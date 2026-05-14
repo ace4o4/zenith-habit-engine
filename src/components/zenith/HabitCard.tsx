@@ -142,11 +142,6 @@ export function HabitCard({ habit }: Props) {
           />
         )}
 
-        {/* end of progress */}
-        <span className="sr-only">{/* spacer */}</span>
-        {/* helper at file bottom */}
-        {false && <span>{formatShort("")}</span>}
-
         {/* Heatmap */}
         <div>
           <p className="mb-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
