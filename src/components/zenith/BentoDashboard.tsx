@@ -9,7 +9,7 @@ interface Props {
 const container = {
   hidden: {},
   show: {
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.05 },
   },
 };
 
@@ -17,22 +17,18 @@ export function BentoDashboard({ habits }: Props) {
   if (habits.length === 0) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 220, damping: 24, delay: 0.1 }}
-        className="glass-bento flex flex-col items-center justify-center gap-3 px-8 py-20 text-center"
+        className="surface-card flex flex-col items-center justify-center gap-3 px-8 py-16 text-center"
       >
         <div
-          className="size-12 rounded-full"
-          style={{
-            backgroundImage: "linear-gradient(135deg,#00f2fe,#4facfe)",
-            boxShadow: "0 0 32px rgba(79,172,254,0.45)",
-            opacity: 0.85,
-          }}
+          className="size-10 rounded-full bg-accent-gradient opacity-90"
+          aria-hidden
         />
-        <h3 className="text-lg font-semibold tracking-tight">The void awaits.</h3>
-        <p className="max-w-sm text-sm text-text-muted">
-          Speak your intent into the terminal above. Zenith will architect the path.
+        <h3 className="text-base font-semibold tracking-tight">No habits yet</h3>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Use the bar above to add your first habit. Try “Read 10 pages for 30 days”.
         </p>
       </motion.div>
     );
@@ -43,7 +39,7 @@ export function BentoDashboard({ habits }: Props) {
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {habits.map((h) => (

@@ -20,6 +20,7 @@ interface AppState {
   setHydrated: (v: boolean) => void;
   addHabit: (title: string, duration: number | "lifetime") => void;
   removeHabit: (id: string) => void;
+  updateHabit: (id: string, patch: { title?: string; duration?: number | "lifetime" }) => void;
   toggleDay: (habitId: string, dateStr?: string) => void;
 }
 
@@ -52,6 +53,18 @@ export const useHabits = create<AppState>()(
         })),
       removeHabit: (id) =>
         set((state) => ({ habits: state.habits.filter((h) => h.id !== id) })),
+      updateHabit: (id, patch) =>
+        set((state) => ({
+          habits: state.habits.map((h) =>
+            h.id === id
+              ? {
+                  ...h,
+                  title: patch.title !== undefined ? patch.title.trim() || h.title : h.title,
+                  duration: patch.duration !== undefined ? patch.duration : h.duration,
+                }
+              : h,
+          ),
+        })),
       toggleDay: (habitId, date) =>
         set((state) => ({
           habits: state.habits.map((h) => {
@@ -69,6 +82,14 @@ export const useHabits = create<AppState>()(
       storage: createJSONStorage(() => indexedDbStorage),
       skipHydration: true,
       partialize: (s) => ({ habits: s.habits }),
+      // Recompute streaks on rehydrate so logic fixes apply to old data
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        state.habits = state.habits.map((h) => ({
+          ...h,
+          streak: computeStreak(h.history),
+        }));
+      },
     },
   ),
 );

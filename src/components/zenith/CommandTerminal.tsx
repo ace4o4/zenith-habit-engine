@@ -1,68 +1,144 @@
 import { useState } from "react";
-import { motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowRight, Check, AlertCircle } from "lucide-react";
 import { parseHabit } from "@/lib/parseHabit";
 import { useHabits } from "@/store/habits";
 
+type Status = { kind: "idle" } | { kind: "ok"; title: string } | { kind: "error"; msg: string };
+
 export function CommandTerminal() {
   const [value, setValue] = useState("");
-  const [pulse, setPulse] = useState(false);
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
   const addHabit = useHabits((s) => s.addHabit);
 
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const parsed = parseHabit(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setStatus({
+        kind: "error",
+        msg: "Type a habit. Example: “Read 10 pages for 30 days”.",
+      });
+      return;
+    }
+    const parsed = parseHabit(trimmed);
     if (!parsed || !parsed.title) {
-      setPulse(true);
-      setTimeout(() => setPulse(false), 400);
+      setStatus({
+        kind: "error",
+        msg: "Couldn't parse that. Try: “[Action]” or “[Action] for [N] days/weeks”.",
+      });
       return;
     }
     addHabit(parsed.title, parsed.duration);
+    setStatus({ kind: "ok", title: parsed.title });
     setValue("");
+    window.setTimeout(() => setStatus({ kind: "idle" }), 1800);
   };
+
+  const onChange = (v: string) => {
+    setValue(v);
+    if (status.kind !== "idle") setStatus({ kind: "idle" });
+  };
+
+  const isError = status.kind === "error";
+  const isOk = status.kind === "ok";
 
   return (
     <motion.form
       onSubmit={submit}
-      initial={{ opacity: 0, y: -12 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 220, damping: 24, delay: 0.05 }}
       className="relative mx-auto w-full max-w-2xl"
     >
       <motion.div
-        animate={pulse ? { x: [-4, 4, -3, 3, 0] } : { x: 0 }}
-        transition={{ duration: 0.4 }}
-        className="glass-bento flex items-center gap-3 rounded-full px-5 py-3"
-        style={{ borderRadius: 9999 }}
+        animate={isError ? { x: [-5, 5, -4, 4, 0] } : { x: 0 }}
+        transition={{ duration: 0.36 }}
+        className="surface-card flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5"
+        style={{
+          borderColor: isError
+            ? "var(--destructive)"
+            : isOk
+              ? "color-mix(in oklab, var(--accent) 60%, transparent)"
+              : undefined,
+        }}
       >
         <span
           aria-hidden
-          className="size-2 rounded-full bg-neon"
-          style={{ boxShadow: "0 0 12px rgba(79,172,254,0.8)" }}
+          className="hidden size-2 shrink-0 rounded-full bg-accent-gradient sm:block"
         />
         <input
           value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="I will [Action] for [Duration]…"
-          className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="I will [action] for [duration]…"
+          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
           aria-label="New habit command"
+          aria-invalid={isError}
           autoComplete="off"
           spellCheck={false}
         />
         <motion.button
           type="submit"
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.94 }}
           transition={{ type: "spring", stiffness: 400, damping: 22 }}
-          className="inline-flex size-8 items-center justify-center rounded-full bg-neon text-[#050507]"
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background"
           aria-label="Create habit"
         >
-          <ArrowRight className="size-4" strokeWidth={2.5} />
+          <ArrowRight className="size-4" strokeWidth={2.25} />
         </motion.button>
       </motion.div>
-      <p className="mt-2 text-center text-[11px] text-text-muted">
-        Try “Read 10 pages for 30 days” · “Meditate for 2 weeks” · “Drink water”
-      </p>
+
+      <div className="mt-2 min-h-[18px] px-1 text-center">
+        <AnimatePresence mode="wait" initial={false}>
+          {isError && (
+            <motion.p
+              key="err"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18 }}
+              className="inline-flex items-center gap-1.5 text-[12px] text-destructive"
+              role="alert"
+            >
+              <AlertCircle className="size-3.5" />
+              {status.msg}
+            </motion.p>
+          )}
+          {isOk && (
+            <motion.p
+              key="ok"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18 }}
+              className="inline-flex items-center gap-1.5 text-[12px] text-foreground"
+            >
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                className="inline-flex size-4 items-center justify-center rounded-full bg-accent-gradient text-[var(--accent-foreground)]"
+              >
+                <Check className="size-2.5" strokeWidth={3} />
+              </motion.span>
+              Added “{status.title}”
+            </motion.p>
+          )}
+          {status.kind === "idle" && (
+            <motion.p
+              key="hint"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="text-[11px] text-muted-foreground"
+            >
+              Try “Read 10 pages for 30 days” · “Meditate for 2 weeks” · “Drink water”
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.form>
   );
 }

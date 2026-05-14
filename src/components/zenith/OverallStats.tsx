@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ProgressRing } from "./ProgressRing";
+import { ProgressBar } from "./ProgressBar";
 import { getOverallProgress, type HabitEntity } from "@/store/habits";
 import { todayStr } from "@/lib/date";
 
@@ -22,40 +22,52 @@ export function OverallStats({ habits }: Props) {
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 220, damping: 24 }}
-      className="glass-bento flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between"
+      className="surface-card flex flex-col gap-5 p-5 sm:p-6"
     >
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted">
+      <div className="flex flex-col gap-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {dateLabel}
         </p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary md:text-3xl">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[28px]">
           {total === 0 ? (
-            "Engineer your day"
+            "Build your first ritual"
           ) : doneToday === total ? (
-            <>All clear. <span className="text-neon">Zenith reached.</span></>
+            <>All clear. <span className="text-accent-gradient">Zenith reached.</span></>
           ) : (
             <>
-              <span className="text-neon">{doneToday}</span>
-              <span className="text-text-muted"> / {total}</span> committed today
+              <span className="text-accent-gradient">{doneToday}</span>
+              <span className="text-muted-foreground"> / {total}</span> committed today
             </>
           )}
         </h2>
-        <p className="mt-1 text-sm text-text-muted">
-          Longest active streak{" "}
-          <span className="text-text-primary tabular-nums">{longest}</span> days.
-        </p>
       </div>
 
-      <div className="flex items-center gap-6">
-        <ProgressRing
-          progress={overall}
-          size={84}
-          label={`${Math.round(overall * 100)}%`}
-        />
+      <ProgressBar progress={overall} showLabel={false} height={8} />
+
+      <div className="grid grid-cols-3 gap-4 border-t border-border pt-4">
+        <Stat label="Today" value={`${doneToday}/${total}`} />
+        <Stat label="Longest streak" value={`${longest}`} suffix={longest === 1 ? "day" : "days"} />
+        <Stat label="Overall" value={`${Math.round(overall * 100)}%`} />
       </div>
     </motion.section>
+  );
+}
+
+function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="mt-1 text-lg font-semibold tabular-nums text-foreground sm:text-xl">
+        {value}
+        {suffix && (
+          <span className="ml-1 text-xs font-normal text-muted-foreground">{suffix}</span>
+        )}
+      </span>
+    </div>
   );
 }
