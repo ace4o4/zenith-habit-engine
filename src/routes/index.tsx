@@ -33,6 +33,8 @@ function Index() {
   const hydrated = useHabits((s) => s.hydrated);
   const setHydrated = useHabits((s) => s.setHydrated);
   const [mounted, setMounted] = useState(false);
+  const [todosOpen, setTodosOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -52,10 +54,17 @@ function Index() {
               ZENITH
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:inline">
-              Offline · Local · Yours
-            </span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <IconButton
+              label="Open todos"
+              onClick={() => setTodosOpen(true)}
+              icon={<ListChecks className="size-4" strokeWidth={1.75} />}
+            />
+            <IconButton
+              label="Open notes"
+              onClick={() => setNotesOpen(true)}
+              icon={<NotebookPen className="size-4" strokeWidth={1.75} />}
+            />
             <ThemeToggle />
           </div>
         </header>
