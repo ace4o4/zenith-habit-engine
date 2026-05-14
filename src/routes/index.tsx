@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { ListChecks, NotebookPen } from "lucide-react";
 import { CommandTerminal } from "@/components/zenith/CommandTerminal";
 import { BentoDashboard } from "@/components/zenith/BentoDashboard";
 import { OverallStats } from "@/components/zenith/OverallStats";
 import { ThemeToggle } from "@/components/zenith/ThemeToggle";
+import { TodosPanel } from "@/components/zenith/TodosPanel";
+import { NotesPanel } from "@/components/zenith/NotesPanel";
 import { useHabits } from "@/store/habits";
 
 export const Route = createFileRoute("/")({
@@ -30,6 +33,8 @@ function Index() {
   const hydrated = useHabits((s) => s.hydrated);
   const setHydrated = useHabits((s) => s.setHydrated);
   const [mounted, setMounted] = useState(false);
+  const [todosOpen, setTodosOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -49,10 +54,17 @@ function Index() {
               ZENITH
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:inline">
-              Offline · Local · Yours
-            </span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <IconButton
+              label="Open todos"
+              onClick={() => setTodosOpen(true)}
+              icon={<ListChecks className="size-4" strokeWidth={1.75} />}
+            />
+            <IconButton
+              label="Open notes"
+              onClick={() => setNotesOpen(true)}
+              icon={<NotebookPen className="size-4" strokeWidth={1.75} />}
+            />
             <ThemeToggle />
           </div>
         </header>
@@ -72,6 +84,31 @@ function Index() {
           Engineered for focus · {new Date().getFullYear()}
         </footer>
       </div>
+
+      <TodosPanel open={todosOpen} onOpenChange={setTodosOpen} />
+      <NotesPanel open={notesOpen} onOpenChange={setNotesOpen} />
     </main>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  icon,
+}: {
+  label: string;
+  onClick: () => void;
+  icon: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-secondary"
+    >
+      {icon}
+    </button>
   );
 }
