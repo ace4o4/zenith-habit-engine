@@ -84,6 +84,31 @@ function Index() {
           Engineered for focus · {new Date().getFullYear()}
         </footer>
       </div>
+
+      <TodosPanel open={todosOpen} onOpenChange={setTodosOpen} />
+      <NotesPanel open={notesOpen} onOpenChange={setNotesOpen} />
     </main>
+  );
+}
+
+function IconButton({
+  label,
+  onClick,
+  icon,
+}: {
+  label: string;
+  onClick: () => void;
+  icon: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-secondary"
+    >
+      {icon}
+    </button>
   );
 }
