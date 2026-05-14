@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { ListChecks, NotebookPen } from "lucide-react";
 import { CommandTerminal } from "@/components/zenith/CommandTerminal";
 import { BentoDashboard } from "@/components/zenith/BentoDashboard";
 import { OverallStats } from "@/components/zenith/OverallStats";
 import { ThemeToggle } from "@/components/zenith/ThemeToggle";
+import { TodosPanel } from "@/components/zenith/TodosPanel";
+import { NotesPanel } from "@/components/zenith/NotesPanel";
 import { useHabits } from "@/store/habits";
 
 export const Route = createFileRoute("/")({
