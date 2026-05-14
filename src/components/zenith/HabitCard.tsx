@@ -131,7 +131,9 @@ export function HabitCard({ habit }: Props) {
         </div>
 
         {/* Progress */}
-        {fixed ? (
+        {ranged ? (
+          <ProgressBar progress={rate} label="Window progress" />
+        ) : fixed ? (
           <ProgressBar progress={rate} label="Quest progress" />
         ) : (
           <ProgressBar
@@ -139,6 +141,11 @@ export function HabitCard({ habit }: Props) {
             label="Last 30 days"
           />
         )}
+
+        {/* end of progress */}
+        <span className="sr-only">{/* spacer */}</span>
+        {/* helper at file bottom */}
+        {false && <span>{formatShort("")}</span>}
 
         {/* Heatmap */}
         <div>
