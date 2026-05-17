@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Trash2, CheckCircle2, Circle, AlertCircle } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTodos } from "@/store/todos";
@@ -19,11 +19,21 @@ export function TodosPanel({ open, onOpenChange }: Props) {
     useTodos();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
+  const [announce, setAnnounce] = useState("");
   const isMobile = useIsMobile();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const errorId = "todo-error";
+  const hintId = "todo-hint";
+  const counterId = "todo-counter";
 
   useEffect(() => {
     if (open && !hydrated) {
       useTodos.persist.rehydrate()?.then(() => setHydrated(true));
+    }
+    if (open) {
+      // Defer focus until after sheet animation so iOS doesn't fight the keyboard
+      const t = setTimeout(() => inputRef.current?.focus(), 220);
+      return () => clearTimeout(t);
     }
   }, [open, hydrated, setHydrated]);
 
@@ -42,26 +52,31 @@ export function TodosPanel({ open, onOpenChange }: Props) {
     const msg = validate(draft);
     if (msg) {
       setError(msg);
+      setAnnounce(msg);
+      inputRef.current?.focus();
       return;
     }
-    addTodo(draft);
+    const text = draft.trim();
+    addTodo(text);
     setDraft("");
     setError("");
+    setAnnounce(`Added: ${text}`);
+    inputRef.current?.focus();
   };
 
   const onChange = (v: string) => {
     setDraft(v);
     if (!error) return;
-    // live re-validate so the message clears as user fixes input
     const msg = validate(v);
-    if (!msg) setError("");
-    else setError(msg);
+    setError(msg);
+    if (!msg) setAnnounce("");
   };
 
   const remaining = todos.filter((t) => !t.done).length;
   const completed = todos.length - remaining;
   const trimmedLen = draft.trim().length;
   const nearLimit = trimmedLen > MAX_LEN - 20;
+  const describedBy = [error ? errorId : hintId, counterId].join(" ");
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -79,49 +94,68 @@ export function TodosPanel({ open, onOpenChange }: Props) {
           transition={{ type: "spring", stiffness: 260, damping: 28 }}
           className="flex h-full flex-col"
         >
-          {/* Grabber */}
           {isMobile && (
             <div className="flex justify-center pt-2">
               <span className="h-1 w-10 rounded-full bg-border" aria-hidden />
             </div>
           )}
 
-          {/* Header */}
           <header className="px-5 pb-3 pt-4 sm:p-5">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">Todos</h2>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <SheetTitle className="text-lg font-semibold tracking-tight text-foreground">
+              Todos
+            </SheetTitle>
+            <SheetDescription className="mt-0.5 text-[12px] text-muted-foreground">
               {todos.length === 0
                 ? "Capture your immediate next steps."
                 : `${remaining} open · ${completed} done`}
-            </p>
+            </SheetDescription>
           </header>
 
-          {/* Composer */}
+          {/* Live region for screen readers */}
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+          >
+            {announce}
+          </div>
+
           <form
             onSubmit={submit}
             className="border-y border-border bg-card/40 px-5 py-3"
             noValidate
+            aria-label="Add a new todo"
           >
+            <label htmlFor="todo-input" className="sr-only">
+              Todo text
+            </label>
             <div className="flex items-center gap-2">
               <Input
+                id="todo-input"
+                ref={inputRef}
                 value={draft}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="Add a todo…"
                 maxLength={MAX_LEN}
                 aria-invalid={!!error}
-                aria-describedby={error ? "todo-error" : "todo-hint"}
+                aria-describedby={describedBy}
+                aria-errormessage={error ? errorId : undefined}
                 className="h-11 text-[15px]"
                 enterKeyHint="done"
                 autoComplete="off"
+                autoCorrect="off"
+                spellCheck
               />
               <motion.button
                 type="submit"
                 whileTap={{ scale: 0.92 }}
                 transition={{ type: "spring", stiffness: 400, damping: 22 }}
-                aria-label="Add todo"
-                className="inline-flex h-11 min-w-11 items-center justify-center rounded-md bg-foreground px-3 text-background"
+                aria-label={draft.trim() ? `Add todo: ${draft.trim()}` : "Add todo"}
+                disabled={!draft.trim()}
+                className="inline-flex h-11 min-w-11 items-center justify-center rounded-md bg-foreground px-3 text-background transition-opacity disabled:opacity-40"
               >
-                <Plus className="size-4" strokeWidth={2.25} />
+                <Plus className="size-4" strokeWidth={2.25} aria-hidden />
               </motion.button>
             </div>
             <div className="mt-1.5 flex min-h-[16px] items-center justify-between text-[11px]">
@@ -129,7 +163,7 @@ export function TodosPanel({ open, onOpenChange }: Props) {
                 {error ? (
                   <motion.span
                     key="err"
-                    id="todo-error"
+                    id={errorId}
                     role="alert"
                     initial={{ opacity: 0, y: -2 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -137,13 +171,13 @@ export function TodosPanel({ open, onOpenChange }: Props) {
                     transition={{ duration: 0.15 }}
                     className="inline-flex items-center gap-1 text-destructive"
                   >
-                    <AlertCircle className="size-3" />
+                    <AlertCircle className="size-3" aria-hidden />
                     {error}
                   </motion.span>
                 ) : (
                   <motion.span
                     key="hint"
-                    id="todo-hint"
+                    id={hintId}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -155,6 +189,8 @@ export function TodosPanel({ open, onOpenChange }: Props) {
                 )}
               </AnimatePresence>
               <span
+                id={counterId}
+                aria-label={`${trimmedLen} of ${MAX_LEN} characters used`}
                 className={`tabular-nums ${
                   trimmedLen > MAX_LEN
                     ? "text-destructive"
@@ -168,14 +204,13 @@ export function TodosPanel({ open, onOpenChange }: Props) {
             </div>
           </form>
 
-          {/* List */}
           <div className="flex-1 overflow-y-auto px-2 py-2 [overscroll-behavior:contain]">
             {todos.length === 0 ? (
               <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
                 Nothing here yet. Add your first todo above.
               </div>
             ) : (
-              <ul className="flex flex-col">
+              <ul className="flex flex-col" aria-label="Your todos">
                 <AnimatePresence initial={false}>
                   {todos.map((t) => (
                     <motion.li
@@ -189,14 +224,18 @@ export function TodosPanel({ open, onOpenChange }: Props) {
                     >
                       <button
                         type="button"
-                        onClick={() => toggleTodo(t.id)}
-                        aria-label={t.done ? "Mark as not done" : "Mark as done"}
+                        onClick={() => {
+                          toggleTodo(t.id);
+                          setAnnounce(t.done ? `Marked open: ${t.text}` : `Completed: ${t.text}`);
+                        }}
+                        aria-pressed={t.done}
+                        aria-label={t.done ? `Mark as not done: ${t.text}` : `Mark as done: ${t.text}`}
                         className="-m-2 inline-flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {t.done ? (
-                          <CheckCircle2 className="size-5 text-[var(--accent)]" />
+                          <CheckCircle2 className="size-5 text-[var(--accent)]" aria-hidden />
                         ) : (
-                          <Circle className="size-5" />
+                          <Circle className="size-5" aria-hidden />
                         )}
                       </button>
                       <span
@@ -210,11 +249,14 @@ export function TodosPanel({ open, onOpenChange }: Props) {
                       </span>
                       <button
                         type="button"
-                        onClick={() => removeTodo(t.id)}
-                        aria-label="Remove todo"
-                        className="-m-2 inline-flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
+                        onClick={() => {
+                          removeTodo(t.id);
+                          setAnnounce(`Removed: ${t.text}`);
+                        }}
+                        aria-label={`Remove: ${t.text}`}
+                        className="-m-2 inline-flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                       >
-                        <Trash2 className="size-4" />
+                        <Trash2 className="size-4" aria-hidden />
                       </button>
                     </motion.li>
                   ))}
@@ -226,7 +268,10 @@ export function TodosPanel({ open, onOpenChange }: Props) {
           {completed > 0 && (
             <div className="border-t border-border px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               <button
-                onClick={clearCompleted}
+                onClick={() => {
+                  clearCompleted();
+                  setAnnounce(`Cleared ${completed} completed todos`);
+                }}
                 className="h-10 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
               >
                 Clear {completed} completed
