@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/zenith/ThemeToggle";
 import { TodosPanel } from "@/components/zenith/TodosPanel";
 import { NotesPanel } from "@/components/zenith/NotesPanel";
 import { useHabits } from "@/store/habits";
+import { useTodos } from "@/store/todos";
+import { useNotes } from "@/store/notes";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,6 +41,10 @@ function Index() {
   useEffect(() => {
     setMounted(true);
     useHabits.persist.rehydrate()?.then(() => setHydrated(true));
+    // Eagerly hydrate todos + notes so writes persist instantly even
+    // before the user opens those panels.
+    useTodos.persist.rehydrate()?.then(() => useTodos.getState().setHydrated(true));
+    useNotes.persist.rehydrate()?.then(() => useNotes.getState().setHydrated(true));
   }, [setHydrated]);
 
   return (
