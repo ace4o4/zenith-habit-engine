@@ -71,12 +71,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Zenith — God Tier Habit Engine" },
-      { name: "description", content: "Cinematic, offline-first habit tracker." },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1",
+      },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Zenith" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "theme-color", content: "#0b0b10" },
+      { name: "color-scheme", content: "light dark" },
+      { title: "Zenith — Minimal Habit Tracker" },
+      { name: "description", content: "Minimal, premium, offline-first habit tracker." },
       { name: "author", content: "Zenith" },
-      { property: "og:title", content: "Zenith — God Tier Habit Engine" },
-      { property: "og:description", content: "Cinematic, offline-first habit tracker." },
+      { property: "og:title", content: "Zenith — Minimal Habit Tracker" },
+      { property: "og:description", content: "Minimal, premium, offline-first habit tracker." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
