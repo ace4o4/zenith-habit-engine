@@ -42,8 +42,14 @@ function Index() {
   }, [setHydrated]);
 
   return (
-    <main className="relative min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 md:gap-10 md:py-14">
+    <main className="relative min-h-[100dvh] bg-background">
+      <div
+        className="mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col gap-7 px-4 sm:px-6 md:gap-10"
+        style={{
+          paddingTop: "max(1.5rem, env(safe-area-inset-top))",
+          paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+        }}
+      >
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div
