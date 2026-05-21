@@ -6,14 +6,14 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:mobile": "BUILD_TARGET=mobile vite build --mode mobile",
+    "build:mobile": "cross-env BUILD_TARGET=mobile vite build --mode mobile",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
     "android:sync": "npm run build:mobile && npx cap sync android",
     "android:open": "npx cap open android",
-    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
+    "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
@@ -78,6 +78,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.3.4",
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "^1.5.1",
@@ -86,12 +87,14 @@
     "@types/react-dom": "^19.2.0",
     "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^5.0.4",
+    "cross-env": "^10.1.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "lightningcss-win32-x64-msvc": "^1.32.0",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",

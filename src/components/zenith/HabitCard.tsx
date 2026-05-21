@@ -17,6 +17,7 @@ interface Props {
 export function HabitCard({ habit }: Props) {
   const toggleDay = useHabits((s) => s.toggleDay);
   const removeHabit = useHabits((s) => s.removeHabit);
+  const updateHabit = useHabits((s) => s.updateHabit);
   const today = todayStr();
   const doneToday = !!habit.history[today];
   const rate = getCompletionRate(habit);
@@ -103,14 +104,26 @@ export function HabitCard({ habit }: Props) {
             <PopoverContent align="end" className="w-auto p-0">
               <Calendar
                 mode="single"
-                selected={undefined}
+                selected={habit.endDate ? new Date(habit.endDate + "T00:00:00") : undefined}
                 onSelect={(d) => {
                   if (d) {
-                    toggleDay(habit.id, dateStr(d));
+                    const dStr = dateStr(d);
+                    const todayLocal = todayStr();
+                    if (dStr > todayLocal) {
+                      if (habit.endDate === dStr) {
+                        updateHabit(habit.id, { endDate: null, startDate: null });
+                      } else {
+                        updateHabit(habit.id, {
+                          endDate: dStr,
+                          startDate: habit.startDate || dateStr(new Date(habit.createdAt)),
+                        });
+                      }
+                    } else {
+                      toggleDay(habit.id, dStr);
+                    }
                     setCalOpen(false);
                   }
                 }}
-                disabled={(d) => d > new Date()}
                 modifiers={{
                   done: (d) => !!habit.history[dateStr(d)],
                 }}
@@ -121,10 +134,13 @@ export function HabitCard({ habit }: Props) {
                     fontWeight: 600,
                   },
                 }}
+                modifiersClassNames={{
+                  done: "relative after:absolute after:-top-1.5 after:-right-1.5 after:content-['✔'] after:text-[#22c55e] after:text-[12px] after:z-20",
+                }}
                 className="pointer-events-auto p-3"
               />
               <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-                Pick any past day to toggle.
+                Pick a past day to toggle, or a future day to set a goal date.
               </div>
             </PopoverContent>
           </Popover>
