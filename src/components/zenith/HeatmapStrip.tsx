@@ -26,9 +26,9 @@ export function HeatmapStrip({ habit, days = 28 }: Props) {
           <button
             key={d}
             type="button"
-            title={`${d}${isToday ? " (today)" : ""} — click to toggle`}
-            onClick={() => toggleDay(habit.id, d)}
-            className="aspect-square rounded-[3px] transition-all hover:scale-110"
+            title={`${d}${isToday ? " (today) — click to toggle" : " — locked"}`}
+            onClick={() => isToday && toggleDay(habit.id, d)}
+            className={`aspect-square rounded-[3px] transition-all ${isToday ? "hover:scale-110 cursor-pointer" : "cursor-default"}`}
             style={
               done
                 ? {

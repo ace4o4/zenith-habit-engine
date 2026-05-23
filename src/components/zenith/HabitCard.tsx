@@ -118,12 +118,13 @@ export function HabitCard({ habit }: Props) {
                           startDate: habit.startDate || dateStr(new Date(habit.createdAt)),
                         });
                       }
-                    } else {
+                    } else if (dStr === todayLocal) {
                       toggleDay(habit.id, dStr);
                     }
                     setCalOpen(false);
                   }
                 }}
+                disabled={(d) => dateStr(d) < todayStr()}
                 modifiers={{
                   done: (d) => !!habit.history[dateStr(d)],
                 }}
@@ -140,7 +141,7 @@ export function HabitCard({ habit }: Props) {
                 className="pointer-events-auto p-3"
               />
               <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-                Pick a past day to toggle, or a future day to set a goal date.
+                Pick today to toggle, or a future day to set a goal date. Past dates are locked.
               </div>
             </PopoverContent>
           </Popover>
