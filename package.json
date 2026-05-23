@@ -16,7 +16,6 @@
     "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug"
   },
 
-
   "dependencies": {
     "@capacitor/android": "^8.3.4",
     "@capacitor/core": "^8.3.4",
