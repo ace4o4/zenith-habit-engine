@@ -3,7 +3,6 @@
 <p align="center">
   <strong>A minimal, premium, offline-first habit tracker focused on consistency.</strong>
 </p>
-
 <p align="center">
   <img alt="React" src="https://img.shields.io/badge/React-19-111827?logo=react&logoColor=61DAFB">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-111827?logo=typescript&logoColor=3178C6">
