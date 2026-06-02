@@ -11,7 +11,6 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-111827?logo=tailwindcss&logoColor=38BDF8">
   <img alt="Capacitor" src="https://img.shields.io/badge/Capacitor-8-111827?logo=capacitor&logoColor=119EFF">
 </p>
-
 ---
 
 ## 🌌 What is Zenith?
