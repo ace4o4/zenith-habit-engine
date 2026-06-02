@@ -13,6 +13,7 @@
 </p>
 ---
 
+
 ## 🌌 What is Zenith?
 
 Zenith is a distraction-free habit engine that helps you create rituals, track streaks, and stay focused.  
