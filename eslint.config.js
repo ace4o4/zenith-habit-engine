@@ -9,7 +9,7 @@ import tseslint from "typescript-eslint";
 
 
 
-
+jkergheruhgvbukil
 
 
 export default tseslint.config(
