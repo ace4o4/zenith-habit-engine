@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 
 
 
-jkergheruhgvb
+jkergheruh
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi"] },
   {
