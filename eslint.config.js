@@ -6,8 +6,6 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 
-
-j
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi"] },
   {
