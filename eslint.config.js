@@ -7,8 +7,6 @@ import tseslint from "typescript-eslint";
 
 
 
-
-
 jkergheruhgvbuki
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi"] },
