@@ -7,8 +7,7 @@ import tseslint from "typescript-eslint";
 
 
 gdhjsrteyuwi
-hsbfhjsdvfdhjsfdhsj
-
+hsbfhjsdvfdhjsfd
 
 weerwewhgfwegfwuyg
 export default tseslint.config(
