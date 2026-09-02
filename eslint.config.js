@@ -7,9 +7,7 @@ import tseslint from "typescript-eslint";
 
 
 gdhjsrteyuwi
-hsbfhjsdvfdhjsfd
-
-weerwewhgfwegfwuyg
+hsbfhjsdvfdhjsf
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi"] },
   {
